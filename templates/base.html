@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Export Automation (API 3){% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Custom styling to add icons or extra overrides -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <i class="fa-solid fa-earth-americas"></i>
+                <span>EXPORT Automation <sup>API 3</sup></span>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="/" id="nav-home"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                    <li><a href="/upload" id="nav-upload"><i class="fa-solid fa-magnifying-glass"></i> Search Leads</a></li>
+                    <li><a href="/classify" id="nav-classify"><i class="fa-solid fa-robot"></i> AI Classify</a></li>
+                    <li><a href="/send" id="nav-send"><i class="fa-solid fa-paper-plane"></i> Send Campaign</a></li>
+                    <li><a href="/report" id="nav-report"><i class="fa-solid fa-file-invoice"></i> Reports</a></li>
+                    <li><a href="/settings" id="nav-settings"><i class="fa-solid fa-sliders"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Flash messages display -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category if category != 'error' else 'error' }}">
+                  {% if category == 'success' %}
+                      <i class="fa-solid fa-circle-check"></i>
+                  {% else %}
+                      <i class="fa-solid fa-circle-exclamation"></i>
+                  {% endif %}
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Singing Bowls Export Automation System | Built for B2B International Outreach</p>
+    </footer>
+</body>
+</html>
