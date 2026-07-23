@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Lead Classification - Export Automation{% endblock %}
+
+{% block content %}
+<style>
+    #nav-classify { color: var(--primary); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+    
+    .classification-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .classification-split { grid-template-columns: 1fr; }
+    }
+    
+    .scroll-box {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .list-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+    
+    .list-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<div class="card">
+    <h2><i class="fa-solid fa-robot"></i> Gemini AI Classification Module</h2>
+    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem;">
+        This module uses the **Gemini 1.5 Flash API** to classify your discovered leads into B2B Business addresses (yoga studios, wellness centers, distributors) and personal/individual addresses. This enables sending targeted campaigns.
+    </p>
+    
+    <div style="display: flex; gap: 1rem; align-items: center; background: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+        <i class="fa-solid fa-circle-info" style="font-size: 1.5rem; color: var(--primary);"></i>
+        <div style="font-size: 0.9rem;">
+            <strong>Current Stats:</strong> 
+            {{ unclassified_count }} unclassified emails detected out of {{ total_buyers }} total buyers. 
+            Deduplication will be applied automatically.
+        </div>
+    </div>
+    
+    <form action="/classify" method="POST">
+        <button type="submit" class="btn btn-primary" {% if total_buyers == 0 %}disabled{% endif %}>
+            <i class="fa-solid fa-gears"></i> Run AI Classification
+        </button>
+    </form>
+</div>
+
+<div class="classification-split">
+    <!-- Left Column: Business Leads -->
+    <div class="card">
+        <h2 style="border-left-color: var(--primary);"><i class="fa-solid fa-briefcase" style="color: var(--primary);"></i> Business Segment ({{ business_emails|length }} leads)</h2>
+        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">
+            Outreach targets for bulk commercial supply & partner terms.
+        </p>
+        <div class="scroll-box">
+            {% if business_emails %}
+                {% for email in business_emails %}
+                    <div class="list-item"><i class="fa-regular fa-envelope" style="color: var(--primary); margin-right: 0.5rem;"></i> {{ email }}</div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: 1rem; font-size: 0.9rem;">No classified business leads yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Individual Leads -->
+    <div class="card">
+        <h2 style="border-left-color: #8B5CF6;"><i class="fa-solid fa-user" style="color: #8B5CF6;"></i> Individual Segment ({{ individual_emails|length }} leads)</h2>
+        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">
+            Practitioners, yoga teachers, and private sound healers.
+        </p>
+        <div class="scroll-box">
+            {% if individual_emails %}
+                {% for email in individual_emails %}
+                    <div class="list-item"><i class="fa-regular fa-envelope" style="color: #8B5CF6; margin-right: 0.5rem;"></i> {{ email }}</div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: var(--text-secondary); padding: 1rem; font-size: 0.9rem;">No classified individual leads yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
