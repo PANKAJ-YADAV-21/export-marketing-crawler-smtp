@@ -1,0 +1,16 @@
+# Environment variables containing sensitive keys
+.env
+
+# Local data databases (contains leads and logs)
+data/
+!data/.gitkeep
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating system files
+.DS_Store
+Thumbs.db
