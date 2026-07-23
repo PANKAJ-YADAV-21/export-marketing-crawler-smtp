@@ -32,7 +32,7 @@ PRESENTATION_PATH = os.path.join(BASE_DIR, os.getenv("PRESENTATION_PATH", "asset
 DEFAULT_SUBJECT = "Wholesale Singing Bowls Partnership Opportunity"
 DEFAULT_BODY = """Dear {name},
 
-I hope this email finds you well.
+{personalization}
 
 We are a leading exporter of handcrafted Himalayan Singing Bowls. Based on our research, your business/profile shows a keen interest in high-quality wellness, meditation, and sound healing products.
 

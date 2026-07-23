@@ -3,8 +3,9 @@ import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import config
-from logging import activity_logger
+from logger import activity_logger
 from outreach.attachment_handler import load_attachment
+from outreach.personalization import generate_personalized_line
 
 def send_campaign(subject, body_template, audience_type, sender_email=None, sender_password=None, presentation_path=None):
     """
@@ -89,11 +90,18 @@ def send_campaign(subject, body_template, audience_type, sender_email=None, send
         msg['To'] = buyer.get('email') or rec_email
         msg['Subject'] = subject
         
-        # Personalize body
+        # Personalize body using AI-generated introductory line
         try:
-            body = body_template.format(name=name, company=company)
+            country = buyer.get('country') or "Global"
+            platform = buyer.get('source_platform') or "Google"
+            personal_line = generate_personalized_line(name, company, country, platform)
+            body = body_template.format(name=name, company=company, personalization=personal_line)
         except Exception:
-            body = body_template
+            # Fallback if key formatting issues occur
+            body = body_template.replace('{name}', name).replace('{company}', company)
+            if '{personalization}' in body:
+                fallback_line = f"I came across {company} and was very impressed by your dedication to wellness products."
+                body = body.replace('{personalization}', fallback_line)
             
         msg.attach(MIMEText(body, 'plain'))
         msg.attach(attachment_part)
