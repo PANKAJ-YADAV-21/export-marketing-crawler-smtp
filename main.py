@@ -300,5 +300,5 @@ def settings():
 if __name__ == '__main__':
     # Initialize database files
     activity_logger.initialize_csvs()
-    print("Export Automation Server starting on http://127.0.0.1:5000")
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    print("Export Automation Server starting on http://127.0.0.1:8080")
+    app.run(host='127.0.0.1', port=8080, debug=True)
