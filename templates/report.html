@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign Reports - Export Automation{% endblock %}
+
+{% block content %}
+<style>
+    #nav-report { color: var(--primary); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-row { grid-template-columns: 1fr; }
+    }
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-sent { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .status-failed { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+</style>
+
+<div class="card" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+    <div>
+        <h2><i class="fa-solid fa-file-invoice"></i> Campaign Delivery Reports</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Review history and status records of all outreach email dispatches.
+        </p>
+    </div>
+    {% if logs %}
+        <a href="/download-report" class="btn btn-primary"><i class="fa-solid fa-download"></i> Download CSV Report</a>
+    {% endif %}
+</div>
+
+{% if logs %}
+    <div class="stats-row">
+        <div class="stat-card" style="background: rgba(22, 28, 45, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+            <div class="stat-icon"><i class="fa-solid fa-paper-plane"></i></div>
+            <div class="stat-info">
+                <h4>Total Outreach Attempts</h4>
+                <p>{{ logs|length }}</p>
+            </div>
+        </div>
+        <div class="stat-card" style="background: rgba(22, 28, 45, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+            <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-info">
+                <h4>Successful Dispatches</h4>
+                <p>{{ success_count }}</p>
+            </div>
+        </div>
+        <div class="stat-card" style="background: rgba(22, 28, 45, 0.6); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+            <div class="stat-icon error"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div class="stat-info">
+                <h4>Delivery Failures</h4>
+                <p>{{ failed_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table of logs -->
+    <div class="card">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Transaction Logs</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Recipient Email</th>
+                        <th>Delivery Status</th>
+                        <th>Timestamp (Local)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td><code>{{ log.email_address }}</code></td>
+                            <td>
+                                {% if log.status == 'sent' %}
+                                    <span class="status-badge status-sent"><i class="fa-solid fa-check"></i> Sent</span>
+                                {% else %}
+                                    <span class="status-badge status-failed"><i class="fa-solid fa-xmark"></i> Failed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.timestamp }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 4rem; color: var(--text-secondary);">
+        <i class="fa-regular fa-envelope-open" style="font-size: 4rem; margin-bottom: 1.5rem; color: var(--text-secondary);"></i>
+        <h2>No Campaigns Sent Yet</h2>
+        <p style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+            Your campaign outreach records will appear here once you send emails.
+        </p>
+        <a href="/send" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Start outreach campaign</a>
+    </div>
+{% endif %}
+{% endblock %}

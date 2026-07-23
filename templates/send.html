@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Launch Campaign - Export Automation{% endblock %}
+
+{% block content %}
+<style>
+    #nav-send { color: var(--primary); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+    
+    .grid-layout {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .grid-layout { grid-template-columns: 1fr; }
+    }
+    
+    .audience-option {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(255, 255, 255, 0.02);
+        transition: border-color 0.2s, background 0.2s;
+    }
+    
+    .audience-option:hover {
+        border-color: rgba(6, 182, 212, 0.3);
+        background: rgba(6, 182, 212, 0.03);
+    }
+    
+    .audience-option input[type="radio"] {
+        accent-color: var(--primary);
+        width: 18px;
+        height: 18px;
+    }
+    
+    .audience-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .audience-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    
+    .audience-desc {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-top: 0.15rem;
+    }
+</style>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+    <h2><i class="fa-solid fa-paper-plane"></i> Automated Email Marketing Campaign</h2>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+        Launch a cold email campaign pitching your handcrafted Singing Bowls to prospective B2B wellness buyers.
+    </p>
+</div>
+
+<form action="/send" method="POST" class="grid-layout">
+    <!-- Left Panel: Compose Email -->
+    <div class="card">
+        <h2><i class="fa-solid fa-pen-nib"></i> Compose Campaign</h2>
+        
+        <div class="form-group">
+            <label for="subject">Email Subject</label>
+            <input type="text" class="form-control" id="subject" name="subject" value="{{ config_data.DEFAULT_SUBJECT }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="body">Email Pitch Body</label>
+            <textarea class="form-control" id="body" name="body" rows="12" required>{{ config_data.DEFAULT_BODY }}</textarea>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Available personalization tokens: <code>{name}</code> (recipient's name) and <code>{company}</code> (company/shop name).
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Panel: Audience & Attachments -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Card: Audience -->
+        <div class="card" style="margin-bottom: 0;">
+            <h2><i class="fa-solid fa-bullseye"></i> Target Audience</h2>
+            
+            <label class="audience-option">
+                <input type="radio" name="audience" value="business" checked>
+                <div class="audience-info">
+                    <span class="audience-title"><i class="fa-solid fa-briefcase" style="color: var(--primary); margin-right: 0.25rem;"></i> Business Segment</span>
+                    <span class="audience-desc">{{ counts.business }} leads ( yoga studios, wholesale importers )</span>
+                </div>
+            </label>
+            
+            <label class="audience-option">
+                <input type="radio" name="audience" value="individual">
+                <div class="audience-info">
+                    <span class="audience-title"><i class="fa-solid fa-user" style="color: #8B5CF6; margin-right: 0.25rem;"></i> Individual Segment</span>
+                    <span class="audience-desc">{{ counts.individual }} leads ( sound healers, personal collectors )</span>
+                </div>
+            </label>
+            
+            <label class="audience-option">
+                <input type="radio" name="audience" value="all">
+                <div class="audience-info">
+                    <span class="audience-title"><i class="fa-solid fa-globe" style="color: var(--success); margin-right: 0.25rem;"></i> All Discovered Leads</span>
+                    <span class="audience-desc">{{ counts.total }} total contacts</span>
+                </div>
+            </label>
+            
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">
+                <i class="fa-solid fa-shield-halved"></i> Duplicate prevention is active. Previously contacted emails are skipped automatically.
+            </p>
+        </div>
+        
+        <!-- Card: Attachment & Action -->
+        <div class="card" style="margin-bottom: 0;">
+            <h2><i class="fa-solid fa-paperclip"></i> Campaign Attachment</h2>
+            
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fa-regular fa-file-pdf" style="font-size: 2.25rem; color: #EF4444;"></i>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 500; font-size: 0.9rem;">company_presentation.pdf</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Product Pitch & Catalog</span>
+                    </div>
+                </div>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">Loaded</span>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;" {% if counts.total == 0 %}disabled{% endif %}>
+                <i class="fa-solid fa-paper-plane"></i> Launch Outreach Campaign
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
