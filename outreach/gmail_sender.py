@@ -154,3 +154,35 @@ def send_campaign(subject, body_template, audience_type, sender_email=None, send
         'successful_emails': successful_list,
         'failed_emails': failed_list
     }
+
+def send_single_email(to_email, subject, body, sender_email=None, sender_password=None, presentation_path=None):
+    """
+    Sends a single personalized email with presentation attachment (used for test sends).
+    """
+    email = sender_email or config.GMAIL_EMAIL
+    password = sender_password or config.GMAIL_APP_PASSWORD
+    pdf_path = presentation_path or config.PRESENTATION_PATH
+    
+    if not email or not password:
+        return False, "Gmail credentials not configured."
+        
+    attachment_part = load_attachment(pdf_path)
+    if not attachment_part:
+        return False, f"Attachment file not found at: {pdf_path}"
+        
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+        msg.attach(attachment_part)
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
+        server.starttls()
+        server.login(email, password)
+        server.send_message(msg)
+        server.quit()
+        return True, "Email sent successfully!"
+    except Exception as e:
+        return False, str(e)
