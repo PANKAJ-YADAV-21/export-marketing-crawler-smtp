@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Export Automation{% endblock %}
+
+{% block content %}
+<style>
+    #nav-settings { color: var(--primary); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+</style>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <h2><i class="fa-solid fa-sliders"></i> Configuration & Credentials</h2>
+    <form action="/settings" method="POST">
+        
+        <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-envelope"></i> Gmail SMTP Account Settings
+        </h3>
+        
+        <div class="form-group">
+            <label for="gmail_email">Gmail Address</label>
+            <input type="email" class="form-control" id="gmail_email" name="gmail_email" value="{{ config_data.GMAIL_EMAIL }}" placeholder="your_email@gmail.com" required>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Note: Do not use your primary Google account password. You must generate an App Password.
+            </p>
+        </div>
+        
+        <div class="form-group">
+            <label for="gmail_app_password">Gmail App Password (16 characters)</label>
+            <input type="password" class="form-control" id="gmail_app_password" name="gmail_app_password" value="{{ config_data.GMAIL_APP_PASSWORD }}" placeholder="abcd efgh ijkl mnop" required>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Generate via: Google Account -> Security -> 2-Step Verification -> App Passwords.
+            </p>
+        </div>
+
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-robot"></i> Gemini AI API Settings
+        </h3>
+
+        <div class="form-group">
+            <label for="gemini_api_key">Gemini API Key</label>
+            <input type="password" class="form-control" id="gemini_api_key" name="gemini_api_key" value="{{ config_data.GEMINI_API_KEY }}" placeholder="AIzaSy...">
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Required for the AI Classification Module. If empty or invalid, the system will fall back to a domain-based heuristic classifier.
+            </p>
+        </div>
+
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-gears"></i> General Campaign Run Defaults
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="search_keyword">Default Search Keyword</label>
+                <input type="text" class="form-control" id="search_keyword" name="search_keyword" value="{{ config_data.SEARCH_KEYWORD }}">
+            </div>
+            <div class="form-group">
+                <label for="daily_send_limit">Daily Send Limit</label>
+                <input type="number" class="form-control" id="daily_send_limit" name="daily_send_limit" value="{{ config_data.DAILY_SEND_LIMIT }}" min="1">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="send_delay">Throttle Send Delay (Seconds)</label>
+                <input type="number" class="form-control" id="send_delay" name="send_delay" value="{{ config_data.SEND_DELAY }}" min="0.5" step="0.5">
+            </div>
+            <div class="form-group">
+                <label for="presentation_path">Presentation Path</label>
+                <input type="text" class="form-control" id="presentation_path" name="presentation_path" value="{{ config_data.PRESENTATION_PATH }}">
+            </div>
+        </div>
+
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+            <i class="fa-solid fa-file-signature"></i> Default Email Pitch Template
+        </h3>
+
+        <div class="form-group">
+            <label for="default_subject">Default Email Subject</label>
+            <input type="text" class="form-control" id="default_subject" name="default_subject" value="{{ config_data.DEFAULT_SUBJECT }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="default_body">Default Email Body</label>
+            <textarea class="form-control" id="default_body" name="default_body" rows="10" placeholder="Hello {name} from {company}..." required>{{ config_data.DEFAULT_BODY }}</textarea>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Tip: You can use placeholder tags like <code>{name}</code> and <code>{company}</code> which will be dynamically replaced for each buyer.
+            </p>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

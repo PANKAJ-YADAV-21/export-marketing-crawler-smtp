@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Export Automation{% endblock %}
+
+{% block content %}
+<style>
+    /* Add active class to navigation link dynamically */
+    #nav-home { color: var(--primary); text-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: rgba(22, 28, 45, 0.6);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        color: var(--primary);
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: rgba(6, 182, 212, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stat-icon.success { color: var(--success); background: rgba(16, 185, 129, 0.1); }
+    .stat-icon.error { color: var(--error); background: rgba(239, 68, 68, 0.1); }
+    .stat-icon.warning { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+    
+    .stat-info h4 {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .stat-info p {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-top: 0.25rem;
+    }
+    
+    .dashboard-split {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-split { grid-template-columns: 1fr; }
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .badge-business { background: rgba(6, 182, 212, 0.15); color: var(--primary); }
+    .badge-individual { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+    .badge-sent { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-failed { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+            <h4>Total Buyers</h4>
+            <p>{{ stats.total_buyers }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success"><i class="fa-solid fa-square-envelope"></i></div>
+        <div class="stat-info">
+            <h4>Outreach Sent</h4>
+            <p>{{ stats.sent_count }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
+        <div class="stat-info">
+            <h4>Unsent Leads</h4>
+            <p>{{ stats.unsent_count }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon success"><i class="fa-solid fa-percent"></i></div>
+        <div class="stat-info">
+            <h4>Success Rate</h4>
+            <p>{{ stats.success_rate }}%</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-split">
+    <!-- Left Column: Recent Buyers -->
+    <div class="card">
+        <h2><i class="fa-solid fa-address-book"></i> Discovered Buyers (Latest)</h2>
+        {% if latest_buyers %}
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Company</th>
+                            <th>Email</th>
+                            <th>Country</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for buyer in latest_buyers %}
+                            <tr>
+                                <td>{{ buyer.buyer_name or 'N/A' }}</td>
+                                <td>{{ buyer.company_name or 'N/A' }}</td>
+                                <td><code>{{ buyer.email }}</code></td>
+                                <td>{{ buyer.country or 'Global' }}</td>
+                                <td>{{ buyer.source_platform }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 1rem; text-align: right;">
+                <a href="/upload" class="btn btn-secondary btn-sm"><i class="fa-solid fa-magnifying-glass"></i> Find More Leads</a>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>No buyer records in database. Start by searching for leads.</p>
+                <a href="/upload" class="btn btn-primary" style="margin-top: 1rem;"><i class="fa-solid fa-circle-plus"></i> Search Now</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Campaign Segment Statistics -->
+    <div class="card">
+        <h2><i class="fa-solid fa-pie-chart"></i> Segments</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <span class="badge badge-business"><i class="fa-solid fa-briefcase"></i> Business</span>
+                <strong>{{ stats.business_count }} leads</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <span class="badge badge-individual"><i class="fa-solid fa-user"></i> Individual</span>
+                <strong>{{ stats.individual_count }} leads</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <span class="badge badge-sent"><i class="fa-solid fa-check"></i> Sent OK</span>
+                <strong>{{ stats.success_sent }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem;">
+                <span class="badge badge-failed"><i class="fa-solid fa-xmark"></i> Failed Sends</span>
+                <strong>{{ stats.failed_sent }}</strong>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <a href="/classify" class="btn btn-primary"><i class="fa-solid fa-robot"></i> AI Classify Segments</a>
+            <a href="/send" class="btn btn-secondary"><i class="fa-solid fa-paper-plane"></i> Launch Campaign</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
