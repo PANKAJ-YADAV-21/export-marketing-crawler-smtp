@@ -14,6 +14,7 @@ BUSINESS_CSV = os.path.join(DATA_DIR, "business_emails.csv")
 INDIVIDUAL_CSV = os.path.join(DATA_DIR, "individual_emails.csv")
 SENT_LOG_CSV = os.path.join(DATA_DIR, "sent_log.csv")
 SETTINGS_JSON = os.path.join(DATA_DIR, "settings.json")
+REPLIES_JSON = os.path.join(DATA_DIR, "replies.json")
 
 # Ensure data directory exists
 os.makedirs(DATA_DIR, exist_ok=True)

@@ -166,6 +166,53 @@
         {% endif %}
     </div>
 
+    <!-- Campaign Inbox Replies Panel -->
+    <div class="card" style="margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+            <h2 style="margin: 0; border: none; padding: 0;"><i class="fa-solid fa-reply"></i> Campaign Inbox Replies</h2>
+            <form action="/sync-replies" method="POST" style="margin: 0;">
+                <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"><i class="fa-solid fa-arrows-rotate"></i> Sync Inbox</button>
+            </form>
+        </div>
+        
+        {% if replies %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% for reply in replies %}
+                    <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div>
+                                <strong style="font-size: 0.85rem; color: #F3F4F6;">{{ reply.sender }}</strong>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem;">Subject: {{ reply.subject }}</div>
+                            </div>
+                            <span class="badge" style="
+                                {% if reply.sentiment == 'Positive' %}
+                                    background: rgba(16, 185, 129, 0.15); color: var(--success);
+                                {% elif reply.sentiment == 'Unsubscribe' %}
+                                    background: rgba(239, 68, 68, 0.15); color: #fca5a5;
+                                {% else %}
+                                    background: rgba(156, 163, 175, 0.15); color: var(--text-secondary);
+                                {% endif %}
+                            ">
+                                {{ reply.sentiment }}
+                            </span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; margin: 0; font-style: italic;">
+                            "{{ reply.snippet }}"
+                        </p>
+                        {% if reply.is_mock %}
+                            <span style="position: absolute; bottom: 0.25rem; right: 0.5rem; font-size: 0.6rem; color: var(--text-secondary); opacity: 0.4;">Simulated Reply</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 1.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+                <i class="fa-regular fa-envelope-open" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                No email replies synchronized yet. Click <strong>Sync Inbox</strong> to scan Gmail.
+            </div>
+        {% endif %}
+    </div>
+
     <!-- Right Column: Campaign Segment Statistics -->
     <div class="card">
         <h2><i class="fa-solid fa-pie-chart"></i> Segments</h2>

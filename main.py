@@ -7,6 +7,7 @@ from logger import activity_logger
 from search import google_search, facebook_search, linkedin_search, directory_search, website_search
 from outreach.classification import classify_emails
 from outreach.gmail_sender import send_campaign, send_single_email
+from outreach.reply_tracker import fetch_email_replies
 
 app = Flask(__name__)
 app.secret_key = "export_marketing_secret_key"
@@ -101,6 +102,16 @@ def index():
         cty = b.get('country') or 'Global'
         country_counts[cty] = country_counts.get(cty, 0) + 1
         
+    # Load email replies from local json cache
+    replies = []
+    if os.path.exists(config.REPLIES_JSON):
+        try:
+            import json
+            with open(config.REPLIES_JSON, 'r', encoding='utf-8') as f:
+                replies = json.load(f)
+        except Exception:
+            pass
+
     # Take latest 5 buyers
     latest_buyers = buyers[-5:][::-1]
     
@@ -109,7 +120,8 @@ def index():
         stats=stats, 
         latest_buyers=latest_buyers,
         source_counts=source_counts,
-        country_counts=country_counts
+        country_counts=country_counts,
+        replies=replies
     )
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -335,6 +347,26 @@ def send_test():
         'success': success,
         'message': message
     })
+
+@app.route('/sync-replies', methods=['POST'])
+def sync_replies():
+    """
+    Triggers IMAP fetch for replies, logs them locally, and redirects home.
+    """
+    import json
+    replies = fetch_email_replies(
+        user_email=config.GMAIL_EMAIL,
+        app_password=config.GMAIL_APP_PASSWORD
+    )
+    
+    try:
+        with open(config.REPLIES_JSON, 'w', encoding='utf-8') as f:
+            json.dump(replies, f, indent=4)
+        flash(f"Inbox sync completed. Loaded {len(replies)} buyer replies.", "success")
+    except Exception as e:
+        flash(f"Failed to save replies database: {str(e)}", "error")
+        
+    return redirect(url_for('index'))
 
 @app.route('/report')
 def report():
