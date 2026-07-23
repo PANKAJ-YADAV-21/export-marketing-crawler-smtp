@@ -1,7 +1,7 @@
 import os
 import csv
 import pandas as pd
-from flask import Flask, render_react, render_template, request, redirect, url_for, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, Response
 import config
 from logging import activity_logger
 from search import google_search, facebook_search, linkedin_search, directory_search, website_search
