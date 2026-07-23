@@ -1,12 +1,12 @@
 import os
 import csv
 import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, jsonify
 import config
-from logging import activity_logger
+from logger import activity_logger
 from search import google_search, facebook_search, linkedin_search, directory_search, website_search
 from outreach.classification import classify_emails
-from outreach.gmail_sender import send_campaign
+from outreach.gmail_sender import send_campaign, send_single_email
 
 app = Flask(__name__)
 app.secret_key = "export_marketing_secret_key"
@@ -237,6 +237,88 @@ def send():
             return redirect(url_for('send'))
             
     return render_template('send.html', counts=counts, config_data=config)
+
+@app.route('/preview', methods=['POST'])
+def preview_email():
+    """
+    Renders a live email preview for the first buyer record.
+    """
+    subject = request.form.get('subject', config.DEFAULT_SUBJECT)
+    body_template = request.form.get('body', config.DEFAULT_BODY)
+    
+    # Fetch first lead to use as sample
+    buyers = activity_logger.get_discovered_buyers()
+    if not buyers:
+        return jsonify({
+            'success': False,
+            'message': "No lead found in database to generate preview."
+        })
+        
+    buyer = buyers[0]
+    name = buyer.get('buyer_name') or "Wellness Partner"
+    company = buyer.get('company_name') or "Wellness Center"
+    country = buyer.get('country') or "Global"
+    platform = buyer.get('source_platform') or "Google"
+    
+    from outreach.personalization import generate_personalized_line
+    personal_line = generate_personalized_line(name, company, country, platform)
+    
+    try:
+        formatted_body = body_template.format(name=name, company=company, personalization=personal_line)
+    except Exception:
+        # Fallback formatting
+        formatted_body = body_template.replace('{name}', name).replace('{company}', company)
+        if '{personalization}' in formatted_body:
+            formatted_body = formatted_body.replace('{personalization}', personal_line)
+            
+    return jsonify({
+        'success': True,
+        'subject': subject,
+        'body': formatted_body,
+        'recipient': buyer.get('email', 'sample@domain.com'),
+        'name': name,
+        'company': company
+    })
+
+@app.route('/send-test', methods=['POST'])
+def send_test():
+    """
+    Sends a test email to the user's configured email address.
+    """
+    subject = "[TEST SEND] " + request.form.get('subject', config.DEFAULT_SUBJECT)
+    body_template = request.form.get('body', config.DEFAULT_BODY)
+    
+    email = config.GMAIL_EMAIL
+    if not email:
+        return jsonify({
+            'success': False,
+            'message': "Sender email not configured. Please go to Settings."
+        })
+        
+    # Generate personal line for test
+    from outreach.personalization import generate_personalized_line
+    personal_line = generate_personalized_line("Test Recipient", "Himalayan Bowls Testing LLC", "USA", "Manual Test")
+    
+    try:
+        formatted_body = body_template.format(name="Test Recipient", company="Himalayan Bowls Testing LLC", personalization=personal_line)
+    except Exception:
+        formatted_body = body_template.replace('{name}', "Test Recipient").replace('{company}', "Himalayan Bowls Testing LLC")
+        if '{personalization}' in formatted_body:
+            formatted_body = formatted_body.replace('{personalization}', personal_line)
+            
+    success, message = send_single_email(
+        to_email=email,
+        subject=subject,
+        body=formatted_body,
+        sender_email=config.GMAIL_EMAIL,
+        sender_password=config.GMAIL_APP_PASSWORD,
+        presentation_path=config.PRESENTATION_PATH
+    )
+    
+    return jsonify({
+        'success': success,
+        'message': message
+    })
 
 @app.route('/report')
 def report():

@@ -136,7 +136,122 @@
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;" {% if counts.total == 0 %}disabled{% endif %}>
                 <i class="fa-solid fa-paper-plane"></i> Launch Outreach Campaign
             </button>
+            
+            <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" style="flex: 1; padding: 0.75rem;" onclick="openPreviewModal()"><i class="fa-solid fa-eye"></i> Live Preview</button>
+                <button type="button" class="btn btn-secondary" style="flex: 1; padding: 0.75rem;" onclick="sendTestEmail()"><i class="fa-solid fa-vial"></i> Send Test</button>
+            </div>
         </div>
     </div>
 </form>
+
+<!-- Live Preview Modal -->
+<div id="previewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="card" style="width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 0 40px rgba(6, 182, 212, 0.2); margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; border: none; padding: 0;"><i class="fa-solid fa-eye" style="color: var(--primary); margin-right: 0.5rem;"></i> Email Pitch Preview</h2>
+            <button type="button" onclick="closePreviewModal()" style="background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; transition: color 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="form-group">
+            <label>Sample Recipient</label>
+            <input type="text" id="preview-recipient" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+            <label>Subject Line</label>
+            <input type="text" id="preview-subject" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+            <label>Personalized Body Content</label>
+            <textarea id="preview-body" class="form-control" rows="12" readonly style="font-family: var(--font-sans);"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-secondary" onclick="closePreviewModal()">Close Preview</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openPreviewModal() {
+    const subject = document.getElementById('subject').value;
+    const body = document.getElementById('body').value;
+    
+    // Disable preview button state
+    const prevBtn = document.querySelector('button[onclick="openPreviewModal()"]');
+    const origHTML = prevBtn.innerHTML;
+    prevBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+    prevBtn.disabled = true;
+    
+    fetch('/preview', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'subject': subject,
+            'body': body
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('preview-recipient').value = `${data.recipient} (${data.name} from ${data.company})`;
+            document.getElementById('preview-subject').value = data.subject;
+            document.getElementById('preview-body').value = data.body;
+            document.getElementById('previewModal').style.display = 'flex';
+        } else {
+            alert(data.message || "Failed to load preview. Please make sure leads exist.");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error loading email preview.");
+    })
+    .finally(() => {
+        prevBtn.innerHTML = origHTML;
+        prevBtn.disabled = false;
+    });
+}
+
+function closePreviewModal() {
+    document.getElementById('previewModal').style.display = 'none';
+}
+
+function sendTestEmail() {
+    const subject = document.getElementById('subject').value;
+    const body = document.getElementById('body').value;
+    
+    if (!confirm("This will send a test email to your configured address. Continue?")) {
+        return;
+    }
+    
+    // Disable test button state
+    const testBtn = document.querySelector('button[onclick="sendTestEmail()"]');
+    const originalHTML = testBtn.innerHTML;
+    testBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    testBtn.disabled = true;
+    
+    fetch('/send-test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'subject': subject,
+            'body': body
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error sending test email.");
+    })
+    .finally(() => {
+        testBtn.innerHTML = originalHTML;
+        testBtn.disabled = false;
+    });
+}
+</script>
 {% endblock %}
