@@ -110,6 +110,21 @@
     </div>
 </div>
 
+<div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <h2><i class="fa-solid fa-chart-pie"></i> Lead Acquisition Channels</h2>
+        <div style="height: 220px; position: relative;">
+            <canvas id="channelsChart"></canvas>
+        </div>
+    </div>
+    <div class="card" style="margin-bottom: 0;">
+        <h2><i class="fa-solid fa-chart-line"></i> Outreach Success Funnel</h2>
+        <div style="height: 220px; position: relative;">
+            <canvas id="outreachChart"></canvas>
+        </div>
+    </div>
+</div>
+
 <div class="dashboard-split">
     <!-- Left Column: Recent Buyers -->
     <div class="card">
@@ -179,4 +194,83 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Lead Acquisition Channels Chart
+    const channelsCtx = document.getElementById('channelsChart').getContext('2d');
+    const sourceData = {{ source_counts|tojson }};
+    const labels = Object.keys(sourceData);
+    const dataValues = Object.values(sourceData);
+    
+    new Chart(channelsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: labels.length ? labels : ['No Data'],
+            datasets: [{
+                data: dataValues.length ? dataValues : [1],
+                backgroundColor: [
+                    '#06B6D4', // Cyan
+                    '#8B5CF6', // Violet
+                    '#10B981', // Emerald
+                    '#F59E0B', // Amber
+                    '#EF4444', // Rose
+                    '#EC4899'  // Pink
+                ],
+                borderColor: '#111827',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { 
+                        color: '#9CA3AF', 
+                        font: { family: 'Inter', size: 11, weight: '500' },
+                        padding: 10
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+
+    // Outreach Success Funnel Chart
+    const outreachCtx = document.getElementById('outreachChart').getContext('2d');
+    const sentOk = {{ stats.success_sent }};
+    const sentFail = {{ stats.failed_sent }};
+    
+    new Chart(outreachCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Delivered', 'Failed'],
+            datasets: [{
+                data: (sentOk || sentFail) ? [sentOk, sentFail] : [1, 0],
+                backgroundColor: [
+                    '#10B981', // Emerald
+                    '#EF4444'  // Rose
+                ],
+                borderColor: '#111827',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { 
+                        color: '#9CA3AF', 
+                        font: { family: 'Inter', size: 11, weight: '500' },
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

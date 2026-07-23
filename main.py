@@ -91,10 +91,26 @@ def index():
         'failed_sent': failed_sent
     }
     
+    # Count sources and countries for analytical chart plots
+    source_counts = {}
+    country_counts = {}
+    for b in buyers:
+        src = b.get('source_platform') or 'Unknown'
+        source_counts[src] = source_counts.get(src, 0) + 1
+        
+        cty = b.get('country') or 'Global'
+        country_counts[cty] = country_counts.get(cty, 0) + 1
+        
     # Take latest 5 buyers
     latest_buyers = buyers[-5:][::-1]
     
-    return render_template('index.html', stats=stats, latest_buyers=latest_buyers)
+    return render_template(
+        'index.html', 
+        stats=stats, 
+        latest_buyers=latest_buyers,
+        source_counts=source_counts,
+        country_counts=country_counts
+    )
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
